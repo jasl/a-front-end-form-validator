@@ -51,12 +51,14 @@ var Validator = function() {
     for(var i in _val_items) {
       flag = true;
       item = _val_items[i];
-      value = window.document.getElementById(item.id).value.trim();
-      for(var i = 0; i < item.validates.length; i++) {
-        if(Validator.rules[item.validates[i]]) {
-          flag &= Validator.rules[item.validates[i]].should();
-          if(!item.message) {
-            item.message = Validator.rules[item.validates[i]].message;
+      if(window.document.getElementById(item.id)) {
+        value = window.document.getElementById(item.id).value.trim();
+        for(var i = 0; i < item.validates.length; i++) {
+          if(Validator.rules[item.validates[i]]) {
+            flag &= Validator.rules[item.validates[i]].should();
+            if(!item.message) {
+              item.message = Validator.rules[item.validates[i]].message;
+            }
           }
         }
       }
