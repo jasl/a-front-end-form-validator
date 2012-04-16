@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Validator Test</title>
+    <script language="JavaScript" src="validator.js"></script>
+    <script language="JavaScript" src="custom_validator_rules.js"></script>
+    <script language="JavaScript">
+      var v = Validator();
+      // v.add({
+      // id : ['item1', 'item2'],
+      // alias : ['字段1', '字段2'],
+      // validates : ['email']
+      // });
+      // v.add({
+      // id : ['item1', 'item2'],
+      // alias : ['字段1', '字段2'],
+      // validates : ['presence', 'size'],
+      // size : {minimium: 6},
+      // message: 'test'
+      // });
+
+      v.add({
+        id : 'item1',
+        alias : '字段1',
+        validates : ['presence']
+      });
+      v.add({
+        id : 'item2',
+        validates : ['size'],
+        size : {
+          minimium : 4
+        },
+        message : 'item2应当大于四位'
+      });
+      v.add({
+        id : 'item3',
+        validates : ['size'],
+        size : {
+          maximium : 6
+        },
+        message : 'item3不能超过六位'
+      });
+      v.add({
+        id : 'item4',
+        validates : ['size'],
+        size : {
+          minimium : 4,
+          maximium : 6
+        },
+        message : 'item4应在四位到六位之间'
+      });
+      v.add({
+        id : 'item5',
+        validates : ['format'],
+        format : /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+((\.[a-zA-Z0-9_-]{2,3}){1,2})$/,
+        message : 'item5不是有效地E-mail地址'
+      });
+      v.add({
+        id : 'item6',
+        validates : ['should'],
+        should : function() {
+          return value == "hello"
+        },
+        message : 'item6不是hello'
+      });
+      v.add({
+        id : 'item7',
+        validates : ['inclusion'],
+        inclusion : ['male', 'female'],
+        message : 'item7应为male或female'
+      });
+      v.add({
+        id : 'item8',
+        validates : ['exclusion'],
+        exclusion : ['null', 'nil'],
+        message : 'item8不能是null或nil'
+      });
+      v.add({
+        id : 'item9',
+        validates : ['email'],
+        alias : '字段9',
+      });
+
+    </script>
+  </head>
+  <body>
+    <form action="#" method="get" id="test_form" onsubmit="return v.validate()">
+      <label> not empty:
+        <input type="text" name="item1" id="item1" />
+      </label>
+      <br />
+      <label> more than 4:
+        <input type="text" name="item2" id="item2" />
+      </label>
+      <br />
+      <label> less than 6:
+        <input type="text" name="item3" id="item3" />
+      </label>
+      <br />
+      <label> between 4 and 6:
+        <input type="text" name="item4" id="item4" />
+      </label>
+      <br />
+      <label> custom regex:
+        <input type="text" name="item5" id="item5" />
+      </label>
+      <br />
+      <label> by function:
+        <input type="text" name="item6" id="item6" />
+      </label>
+      <br />
+      <label> inclusion:
+        <input type="text" name="item7" id="item7" />
+      </label>
+      <br />
+      <label> exclusion:
+        <input type="text" name="item8" id="item8" />
+      </label>
+      <br />
+      <label> custom(email):
+        <input type="text" name="item9" id="item9" />
+      </label>
+      <br />
+      <input type="submit" />
+    </form>
+  </body>
+</html>
