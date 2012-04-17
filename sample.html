@@ -6,90 +6,93 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Validator Test</title>
     <script language="JavaScript" src="validator.js"></script>
-    <script language="JavaScript" src="custom_validator_rules.js"></script>
+    <script language="JavaScript" src="custom_validator_patterns.js"></script>
     <script language="JavaScript">
       var v = Validator();
-      // v.add({
-      // id : ['item1', 'item2'],
-      // alias : ['字段1', '字段2'],
-      // validates : ['email']
+      v.call_back = function() {
+        if(!item.corrected) {
+          alert(item.message);
+        }
+      }
+      // v.ensure({
+      // 'item1' : '字段1',
+      // 'item2' : '字段2'
+      // }, {
+      // validates : ['size'],
+      // size : {
+      // minimium : 6
+      // },
       // });
-      // v.add({
-      // id : ['item1', 'item2'],
-      // alias : ['字段1', '字段2'],
-      // validates : ['presence', 'size'],
-      // size : {minimium: 6},
-      // message: 'test'
-      // });
-
-      v.add({
-        id : 'item1',
-        alias : '字段1',
-        validates : ['presence']
-      });
-      v.add({
-        id : 'item2',
+      var min_size_pattern = {
         validates : ['size'],
         size : {
           minimium : 4
-        },
-        message : 'item2应当大于四位'
+        }
+      };
+      v.ensure({
+        'item1' : '字段1'
+      }, {
+        validates : ['presence']
       });
-      v.add({
-        id : 'item3',
+      v.ensure({
+        'item2' : '字段2'
+      }, min_size_pattern);
+      v.ensure({
+        'item3' : '字段3'
+      }, {
         validates : ['size'],
         size : {
           maximium : 6
-        },
-        message : 'item3不能超过六位'
+        }
       });
-      v.add({
-        id : 'item4',
+      v.ensure({
+        'item4' : '字段4'
+      }, {
         validates : ['size'],
         size : {
           minimium : 4,
           maximium : 6
-        },
-        message : 'item4应在四位到六位之间'
+        }
       });
-      v.add({
-        id : 'item5',
+      v.ensure({
+        'item5' : '字段5'
+      }, {
         validates : ['format'],
         format : /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+((\.[a-zA-Z0-9_-]{2,3}){1,2})$/,
-        message : 'item5不是有效地E-mail地址'
+        message : '{alias}不是有效的email地址。'
       });
-      v.add({
-        id : 'item6',
-        validates : ['should'],
-        should : function() {
-          return value == "hello"
+      v.ensure({
+        'item6' : '字段6'
+      }, {
+        validates : ['shoulda'],
+        shoulda : function() {
+          return value == 'hello'
         },
-        message : 'item6不是hello'
+        message : '{alias}不是hello。'
       });
-      v.add({
-        id : 'item7',
+      v.ensure({
+        'item7' : '字段7'
+      }, {
         validates : ['inclusion'],
-        inclusion : ['male', 'female'],
-        message : 'item7应为male或female'
+        inclusion : ['male', 'female']
       });
-      v.add({
-        id : 'item8',
+      v.ensure({
+        'item8' : '字段8'
+      }, {
         validates : ['exclusion'],
-        exclusion : ['null', 'nil'],
-        message : 'item8不能是null或nil'
+        exclusion : ['nil', 'null']
       });
-      v.add({
-        id : 'item9',
-        validates : ['email'],
-        alias : '字段9',
+      v.ensure({
+        'item9' : '字段9'
+      }, {
+        validates : ['date']
       });
-
     </script>
   </head>
   <body>
-    <form action="#" method="get" id="test_form" onsubmit="return v.validate()">
+    <form action="#" method="get" id="test_form" onsubmit="return v.check_form()">
       <label> not empty:
-        <input type="text" name="item1" id="item1" />
+        <input type="text" name="item1" id="item1" onblur="v.check(this)"/>
       </label>
       <br />
       <label> more than 4:
@@ -120,7 +123,7 @@
         <input type="text" name="item8" id="item8" />
       </label>
       <br />
-      <label> custom(email):
+      <label> custom(date):
         <input type="text" name="item9" id="item9" />
       </label>
       <br />

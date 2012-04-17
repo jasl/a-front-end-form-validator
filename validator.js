@@ -1,6 +1,6 @@
 /**
  * @author Jasl
- * @version 0.2
+ * @version 0.3
  *
  */
 var Validator = function() {
@@ -8,155 +8,195 @@ var Validator = function() {
 
   var _val_items = Array();
 
-  self.error_items = Array();
+  self.get_error_items = function() {
+    var error_items = Array();
+    for(var i in _val_items) {
+      if(!_val_items[i].corrected) {
+        error_items.push(_val_items[i]);
+      }
+    }
+    return error_items;
+  }
+  var _final_message = function(message, item) {
+    var msg = message;
+    var variables = msg.match(/\{[.\w]+\}/ig);
+    if(msg.indexOf('{alias}') >= 0) {
+      msg = msg.replace('{alias}', item.alias);
+    }
+    for(var i in variables) {
+      key = variables[i].match(/\w+/ig);
+      value = item.pattern[key[0]];
+      if(key.length > 1) {
+        for(var v = 1; v < key.length; v++) {
+          value = value[key[v]];
+        }
+      }
+      if( typeof (value) == 'object') {
+        value = value.toString();
+      }
+      msg = msg.replace(variables[i], value);
+    }
+    msg = msg.replace(/\{[.\w]+\}/ig, '');
+    return msg;
+  };
+
+  self.call_back = undefined;
 
   self.error_handler = function() {
-    str = "";
-    for(var i in self.error_items) {
-      if(self.error_items[i].message) {
-        if(self.error_items[i].alias) {
-          str += self.error_items[i].alias + ": " + self.error_items[i].message;
-        } else {
-          str += self.error_items[i].message;
-        }
-        str += "\n";
-      }
+    var str = "";
+    var error_items = get_error_items();
+    for(var i in error_items) {
+      str += error_items[i].message + "\n";
     }
     alert(str);
   };
 
-  self.add = function(item) {
-    if( typeof (item.id) == 'string') {
-      _val_items.push(item);
-    } else {
-      for(var i in item.id) {
-        sub_item = new Object();
-
-        sub_item.id = item.id[i];
-        if(item.alias) {
-          sub_item.alias = item.alias[i];
-        }
-        for(var j in item) {
-          if(j == 'id' || j == 'alias') {
-            continue;
-          }
-          sub_item[j] = item[j];
-        }
-        _val_items.push(sub_item);
-      }
+  self.ensure = function(item, pattern) {
+    for(var i in item) {
+      _val_items[i] = {
+        id : i,
+        alias : item[i],
+        pattern : pattern,
+        corrected : false
+      };
     }
   };
 
-  self.validate = function() {
-    for(var i in _val_items) {
-      flag = true;
-      item = _val_items[i];
-      if(window.document.getElementById(item.id)) {
-        value = window.document.getElementById(item.id).value.trim();
-        for(var i = 0; i < item.validates.length; i++) {
-          if(Validator.rules[item.validates[i]]) {
-            flag &= Validator.rules[item.validates[i]].should();
-            if(!item.message) {
-              item.message = Validator.rules[item.validates[i]].message;
-            }
+  self.do_validate = function(check_item, check_value, call_back) {
+    item = check_item;
+    value = check_value.trim();
+    pattern = item.pattern;
+
+    for(var i = 0; i < pattern.validates.length; i++) {
+      var rule = Validator.rules[pattern.validates[i]];
+      if(rule) {
+        if(rule.preprocessing) {
+          rule.preprocessing();
+        }
+
+        item.corrected = rule.shoulda();
+        if(!item.corrected) {
+          if(!pattern.message) {
+            item.message = _final_message(Validator.rules[pattern.validates[i]].message, item);
+          } else {
+            item.message = _final_message(pattern.message, item);
           }
         }
       }
-
-      if(flag == false) {
-        self.error_items.push(item);
-      }
     }
 
-    if(self.error_items.length > 0) {
-      self.error_handler();
-      self.error_items.length = 0;
+    if(call_back && self.call_back) {
+      self.call_back();
+    }
 
+    return item.corrected;
+  };
+
+  self.check_form = function() {
+    var flag = true;
+    for(var i in _val_items) {
+      tar = window.document.getElementById(_val_items[i].id);
+      if(tar) {
+        flag &= self.do_validate(_val_items[i], tar.value);
+      }
+    }
+    
+    if(!flag) {
+      self.error_handler();
       return false;
     } else {
-      return true
+      return true;
     }
   };
+
+  self.check = function(e) {
+    var event = arguments[0] || window.event;
+    return self.do_validate(_val_items[event.id], event.value, true);
+  };
+
   return self;
-}
+};
 
 Validator.rules = Array();
 
 Validator.rules['presence'] = {
-  should : function() {
+  shoulda : function() {
     return value != '';
   },
-  message : "不能为空。"
+  message : "{alias}不能为空。"
 };
 
 Validator.rules['size'] = {
-  should : function() {
-    flag = true;
-    if(item.size.minimium) {
-      flag &= (value.length >= item.size.minimium);
+  preprocessing : function() {
+    if(!pattern.size.minimium) {
+      pattern.size.minimium = 0;
     }
-    if(item.size.maximium) {
-      flag &= (value.length <= item.size.maximium);
+    if(!pattern.size.maximium) {
+      pattern.size.maximium = 50;
     }
+  },
+  shoulda : function() {
+    flag = (value.length >= pattern.size.minimium);
+    flag &= (value.length <= pattern.size.maximium);
     return flag;
   },
-  message : "长度无效。"
+  message : "{alias}的长度应在{size.minimium}-{size.maximium}之间。"
 };
 
 Validator.rules['format'] = {
-  should : function() {
-    return item.format.test(value);
+  shoulda : function() {
+    return pattern.format.test(value);
   },
-  message : "格式无效。"
+  message : "{alias}格式无效。"
 };
 
-Validator.rules['should'] = {
-  should : function() {
-    return item.should(value);
+Validator.rules['shoulda'] = {
+  shoulda : function() {
+    return pattern.shoulda(value);
   },
-  message : "格式无效。"
+  message : "{alias}格式无效。"
 };
 
 Validator.rules['inclusion'] = {
-  should : function() {
-    flag = false;
-    for(var i in item.inclusion) {
-      if(item.inclusion[i] == value) {
+  shoulda : function() {
+    var flag = false;
+    for(var i in pattern.inclusion) {
+      if(pattern.inclusion[i] == value) {
         flag = true;
         break;
       }
     }
     return flag;
   },
-  message : "内容无效。"
+  message : "{alias}的值应是[{inclusion}]之一。"
 };
 
 Validator.rules['exclusion'] = {
-  should : function() {
-    flag = true;
-    for(var i in item.exclusion) {
-      if(item.exclusion[i] == value) {
+  shoulda : function() {
+    var flag = true;
+    for(var i in pattern.exclusion) {
+      if(pattern.exclusion[i] == value) {
         flag = false;
         break;
       }
     }
     return flag;
   },
-  message : "内容无效。"
+  message : "{alias}不能包含[{exclusion}]。"
 };
 
 Validator.rules['email'] = {
-  should : function() {
-    regex = /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+((\.[a-zA-Z0-9_-]{2,3}){1,2})$/;
+  shoulda : function() {
+    var regex = /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+((\.[a-zA-Z0-9_-]{2,3}){1,2})$/;
     return regex.test(value);
   },
-  message : "不是有效的E-mail格式。"
+  message : "{alias}不是有效的E-mail格式。"
 };
 
 Validator.rules['date'] = {
-  should : function() {
-    regex = /^\d{4}-(0?[1-9]|1[0-2])-(0?[1-9]|[1-2]\d|3[0-1])$/;
+  shoulda : function() {
+    var regex = /^\d{4}-(0?[1-9]|1[0-2])-(0?[1-9]|[1-2]\d|3[0-1])$/;
     return regex.test(value);
   },
-  message : "不是有效的的日期格式。"
+  message : "{alias}不是有效的的日期格式。"
 };
