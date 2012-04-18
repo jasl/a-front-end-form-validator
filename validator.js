@@ -17,15 +17,15 @@ var Validator = function() {
     }
     return error_items;
   };
-  
+
   var _final_message = function(message, item) {
     var msg = message;
     var variables = msg.match(/\{[.\w]+\}/ig);
-    
+
     if(msg.indexOf('{alias}') >= 0) {
       msg = msg.replace('{alias}', item.alias);
     }
-    
+
     for(var i in variables) {
       key = variables[i].match(/\w+/ig);
       value = item.pattern[key[0]];
@@ -103,7 +103,7 @@ var Validator = function() {
         flag &= self.do_validate(_val_items[i], tar.value);
       }
     }
-    
+
     if(!flag) {
       self.error_handler();
       return false;
