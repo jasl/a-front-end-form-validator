@@ -9,20 +9,20 @@
     <script language="JavaScript" src="custom_validator_patterns.js"></script>
     <script language="JavaScript">
       var v = Validator();
-      
+
       v.call_back = function() {
         if(!item.corrected) {
           alert(item.message);
         }
       };
-      
+
       var min_size_pattern = {
         validates : ['size'],
         size : {
           minimium : 4
         }
       };
-      
+
       // v.ensure({
       // 'item1' : '字段1',
       // 'item2' : '字段2'
@@ -32,7 +32,7 @@
       // minimium : 6
       // },
       // });
-      
+
       v.ensure({
         'item1' : '字段1'
       }, {
