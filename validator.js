@@ -62,7 +62,7 @@ var Validator = function() {
     }
   };
 
-  self.do_validate = function(check_item, check_value, call_back) {
+  self.do_validate = function(check_item, check_value, use_call_back) {
     item = check_item;
     value = check_value.trim();
     pattern = item.pattern;
@@ -85,7 +85,7 @@ var Validator = function() {
       }
     }
 
-    if(call_back && self.call_back) {
+    if(use_call_back && self.call_back) {
       self.call_back();
     }
 
