@@ -6,8 +6,10 @@
 var Validator = function() {
   var self = this;
 
+  var _default_message = '{alias}输入有误。';
+  
   var _val_items = Array();
-
+  
   self.get_error_items = function() {
     var error_items = Array();
     for(var i in _val_items) {
@@ -81,8 +83,10 @@ var Validator = function() {
         if(!item.corrected) {
           if(!pattern.message) {
             item.message = _final_message(Validator.rules[pattern.validates[i]].message, item);
-          } else {
+          } else if(pattern.message) {
             item.message = _final_message(pattern.message, item);
+          } else {
+            item.message = _final_message(_default_message, item);
           }
         }
       }
