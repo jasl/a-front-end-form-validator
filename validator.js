@@ -3,22 +3,14 @@
  * @version 0.4
  *
  */
-var Validator = function() {
+var Validator = (function() {
   var self = this;
 
   var _default_message = '{alias}输入有误。';
-  
+
   var _val_items = Array();
-  
-  self.get_error_items = function() {
-    var error_items = Array();
-    for(var i in _val_items) {
-      if(!_val_items[i].corrected) {
-        error_items.push(_val_items[i]);
-      }
-    }
-    return error_items;
-  };
+
+  var _val_rules = Array();
 
   var _final_message = function(message, item) {
     var msg = message;
@@ -45,6 +37,25 @@ var Validator = function() {
     return msg;
   };
 
+  self.add_rule = function(name, pattern) {
+    if(name != '' && pattern && pattern.shoulda) {
+      _val_rules[name] = pattern;
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  self.get_error_items = function() {
+    var error_items = Array();
+    for(var i in _val_items) {
+      if(!_val_items[i].corrected) {
+        error_items.push(_val_items[i]);
+      }
+    }
+    return error_items;
+  };
+
   self.call_back = undefined;
 
   self.error_handler = function() {
@@ -67,13 +78,13 @@ var Validator = function() {
     }
   };
 
-  self.do_validate = function(check_item, check_value, use_call_back) {
-    item = check_item;
-    value = check_value.trim();
+  self.do_validate = function(field, field_value, use_call_back) {
+    item = field;
+    value = field_value.trim();
     pattern = item.pattern;
 
     for(var i = 0; i < pattern.validates.length; i++) {
-      var rule = Validator.rules[pattern.validates[i]];
+      var rule = _val_rules[pattern.validates[i]];
       if(rule) {
         if(rule.preprocessing) {
           rule.preprocessing();
@@ -82,7 +93,7 @@ var Validator = function() {
         item.corrected = rule.shoulda();
         if(!item.corrected) {
           if(!pattern.message) {
-            item.message = _final_message(Validator.rules[pattern.validates[i]].message, item);
+            item.message = _final_message(rule.message, item);
           } else if(pattern.message) {
             item.message = _final_message(pattern.message, item);
           } else {
@@ -104,7 +115,7 @@ var Validator = function() {
     for(var i in _val_items) {
       tar = window.document.getElementById(_val_items[i].id);
       if(tar) {
-        flag &= self.do_validate(_val_items[i], tar.value);
+        flag &= self.do_validate(_val_items[i], tar.value.trim());
       }
     }
 
@@ -120,20 +131,18 @@ var Validator = function() {
     var event = arguments[0] || window.event;
     return self.do_validate(_val_items[event.id], event.value, true);
   };
-
+  
   return self;
-};
+})();
 
-Validator.rules = Array();
-
-Validator.rules['presence'] = {
+Validator.add_rule('presence', {
   shoulda : function() {
     return value != '';
   },
   message : "{alias}不能为空。"
-};
+});
 
-Validator.rules['size'] = {
+Validator.add_rule('size', {
   preprocessing : function() {
     if(!pattern.size.minimium) {
       pattern.size.minimium = 0;
@@ -148,24 +157,34 @@ Validator.rules['size'] = {
     return flag;
   },
   message : "{alias}的长度应在{size.minimium}-{size.maximium}之间。"
-};
+});
 
-Validator.rules['format'] = {
+Validator.add_rule('format', {
   shoulda : function() {
+    if(!pattern.format) {
+      return false;
+    }
     return pattern.format.test(value);
   },
   message : "{alias}格式无效。"
-};
+});
 
-Validator.rules['shoulda'] = {
+Validator.add_rule('shoulda', {
   shoulda : function() {
+    if(!pattern.shoulda) {
+      return false;
+    }
     return pattern.shoulda(value);
   },
   message : "{alias}格式无效。"
-};
+});
 
-Validator.rules['inclusion'] = {
+Validator.add_rule('inclusion', {
   shoulda : function() {
+    if(!pattern.inclusion) {
+      return false;
+    }
+
     var flag = false;
     for(var i in pattern.inclusion) {
       if(pattern.inclusion[i] == value) {
@@ -176,10 +195,14 @@ Validator.rules['inclusion'] = {
     return flag;
   },
   message : "{alias}的值应是[{inclusion}]之一。"
-};
+});
 
-Validator.rules['exclusion'] = {
+Validator.add_rule('exclusion', {
   shoulda : function() {
+    if(!pattern.exclusion) {
+      return false;
+    }
+
     var flag = true;
     for(var i in pattern.exclusion) {
       if(pattern.exclusion[i] == value) {
@@ -190,20 +213,20 @@ Validator.rules['exclusion'] = {
     return flag;
   },
   message : "{alias}不能包含[{exclusion}]。"
-};
+});
 
-Validator.rules['email'] = {
+Validator.add_rule('email', {
   shoulda : function() {
     var regex = /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+((\.[a-zA-Z0-9_-]{2,3}){1,2})$/;
     return regex.test(value);
   },
   message : "{alias}不是有效的E-mail格式。"
-};
+});
 
-Validator.rules['date'] = {
+Validator.add_rule('date', {
   shoulda : function() {
     var regex = /^\d{4}-(0?[1-9]|1[0-2])-(0?[1-9]|[1-2]\d|3[0-1])$/;
     return regex.test(value);
   },
   message : "{alias}不是有效的的日期格式。"
-};
+});
