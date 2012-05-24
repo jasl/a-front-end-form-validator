@@ -216,11 +216,3 @@ Validator.add_rule('email', {
   },
   message : "{alias}不是有效的E-mail格式。"
 });
-
-Validator.add_rule('date', {
-  shoulda : function(value, pattern) {
-    var regex = /^\d{4}-(0?[1-9]|1[0-2])-(0?[1-9]|[1-2]\d|3[0-1])$/;
-    return regex.test(value);
-  },
-  message : "{alias}不是有效的的日期格式。"
-});
