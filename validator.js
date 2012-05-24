@@ -8,9 +8,9 @@ var Validator = (function() {
 
   var _default_message = '{alias}输入有误。';
 
-  var _val_items = Array();
+  var _val_items = [];
 
-  var _val_rules = Array();
+  var _val_rules = [];
 
   var _final_message = function(message, item) {
     var msg = message;
@@ -21,8 +21,8 @@ var Validator = (function() {
     }
 
     for(var i in variables) {
-      key = variables[i].match(/\w+/ig);
-      value = item.pattern[key[0]];
+      var key = variables[i].match(/\w+/ig);
+      var value = item.pattern[key[0]];
       if(key.length > 1) {
         for(var v = 1; v < key.length; v++) {
           value = value[key[v]];
@@ -38,7 +38,7 @@ var Validator = (function() {
   };
 
   self.add_rule = function(name, pattern) {
-    if(name != '' && pattern && pattern.shoulda) {
+    if(name !== '' && pattern && pattern.shoulda) {
       _val_rules[name] = pattern;
       return true;
     } else {
@@ -131,7 +131,7 @@ var Validator = (function() {
 
 Validator.add_rule('presence', {
   shoulda : function(value, pattern) {
-    return value != '';
+    return value !== '';
   },
   message : "{alias}不能为空。"
 });
@@ -146,9 +146,7 @@ Validator.add_rule('size', {
     }
   },
   shoulda : function(value, pattern) {
-    flag = (value.length >= pattern.size.minimium);
-    flag &= (value.length <= pattern.size.maximium);
-    return flag;
+    return value.length >= pattern.size.minimium && value.length <= pattern.size.maximium;
   },
   message : "{alias}的长度应在{size.minimium}-{size.maximium}之间。"
 });
