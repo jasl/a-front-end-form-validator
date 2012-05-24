@@ -106,7 +106,7 @@ var Validator = (function() {
     for(var i in _val_items) {
       var tar = window.document.getElementById(_val_items[i].id);
       if(tar) {
-        flag &= self.do_validate(_val_items[i], tar.value.trim());
+        flag = self.do_validate(_val_items[i], tar.value.trim()) && flag;
       }
     }
 
