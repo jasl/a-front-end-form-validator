@@ -9,24 +9,33 @@
     <script language="JavaScript" src="validator_wrapper.js"></script>
     <script language="JavaScript">
       var v = Validator;
+
+      v.summit_callback = function() {
+        var str = "";
+        var error_items = v.get_error_items();
+        for(var i in error_items) {
+          str += error_items[i].message + "\n";
+        }
+        alert(str);
+      };
       
-      v.call_back = function(item, value) {
+      v.callback = function(item, value) {
         var tar = document.getElementById(item.id + '_status');
-        
+
         if(!item.corrected) {
           tar.innerHTML = item.message;
         } else {
           tar.innerHTML = 'valid';
         }
       };
-      
+
       var min_size_pattern = {
         validates : ['size'],
         size : {
           minimium : 4
         }
       };
-      
+
       // v.ensure({
       // 'item1' : '字段1',
       // 'item2' : '字段2'
@@ -36,7 +45,7 @@
       // minimium : 6
       // },
       // });
-      
+
       v.ensure({
         'item1' : '字段1'
       }, {
@@ -101,48 +110,39 @@
     <form action="#" method="get" id="test_form" onsubmit="return v.check_form()">
       <label> not empty:
         <input type="text" name="item1" id="item1" onblur="v.check(this)"/>
-        <i id="item1_status"></i>
-      </label>
+        <i id="item1_status"></i> </label>
       <br />
       <label> more than 4:
         <input type="text" name="item2" id="item2" onblur="v.check(this)"/>
-        <i id="item2_status"></i>
-      </label>
+        <i id="item2_status"></i> </label>
       <br />
       <label> less than 6:
         <input type="text" name="item3" id="item3" onblur="v.check(this)"/>
-        <i id="item3_status"></i>
-      </label>
+        <i id="item3_status"></i> </label>
       <br />
       <label> between 4 and 6:
         <input type="text" name="item4" id="item4" onblur="v.check(this)"/>
-        <i id="item4_status"></i>
-      </label>
+        <i id="item4_status"></i> </label>
       <br />
       <label> custom regex:
         <input type="text" name="item5" id="item5" onblur="v.check(this)"/>
-        <i id="item5_status"></i>
-      </label>
+        <i id="item5_status"></i> </label>
       <br />
       <label> by function:
         <input type="text" name="item6" id="item6" onblur="v.check(this)"/>
-        <i id="item6_status"></i>
-      </label>
+        <i id="item6_status"></i> </label>
       <br />
       <label> inclusion:
         <input type="text" name="item7" id="item7" onblur="v.check(this)"/>
-        <i id="item7_status"></i>
-      </label>
+        <i id="item7_status"></i> </label>
       <br />
       <label> exclusion:
         <input type="text" name="item8" id="item8" onblur="v.check(this)"/>
-        <i id="item8_status"></i>
-      </label>
+        <i id="item8_status"></i> </label>
       <br />
       <label> custom(date):
         <input type="text" name="item9" id="item9" onblur="v.check(this)"/>
-        <i id="item9_status"></i>
-      </label>
+        <i id="item9_status"></i> </label>
       <br />
       <input type="submit" />
     </form>

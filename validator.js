@@ -56,16 +56,9 @@ var Validator = (function() {
     return error_items;
   };
 
-  self.call_back = undefined;
+  self.callback = undefined;
 
-  self.error_handler = function() {
-    var str = "";
-    var error_items = get_error_items();
-    for(var i in error_items) {
-      str += error_items[i].message + "\n";
-    }
-    alert(str);
-  };
+  self.summit_callback = undefined;
 
   self.ensure = function(item, pattern) {
     for(var i in item) {
@@ -78,7 +71,7 @@ var Validator = (function() {
     }
   };
 
-  self.do_validate = function(item, value, use_call_back) {
+  self.do_validate = function(item, value, use_callback) {
     var pattern = item.pattern;
 
     for(var i = 0; i < pattern.validates.length; i++) {
@@ -101,8 +94,8 @@ var Validator = (function() {
       }
     }
 
-    if(use_call_back && self.call_back) {
-      self.call_back(item, value);
+    if(use_callback && self.callback) {
+      self.callback(item, value);
     }
 
     return item.corrected;
@@ -118,7 +111,10 @@ var Validator = (function() {
     }
 
     if(!flag) {
-      self.error_handler();
+      if(self.summit_callback) {
+        self.summit_callback();
+      }
+ 
       return false;
     } else {
       return true;
@@ -129,7 +125,7 @@ var Validator = (function() {
     var event = arguments[0] || window.event;
     return self.do_validate(_val_items[event.id], event.value, true);
   };
-  
+
   return self;
 })();
 
