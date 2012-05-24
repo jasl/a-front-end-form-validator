@@ -1,6 +1,6 @@
 /**
  * @author Jasl
- * @version 0.5
+ * @version 0.6
  *
  */
 var Validator = (function() {
