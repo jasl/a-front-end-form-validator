@@ -114,7 +114,7 @@ var Validator = (function() {
       if(self.summit_callback) {
         self.summit_callback();
       }
- 
+
       return false;
     } else {
       return true;
