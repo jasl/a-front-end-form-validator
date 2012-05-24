@@ -28,7 +28,7 @@ var Validator = (function() {
           value = value[key[v]];
         }
       }
-      if( typeof (value) == 'object') {
+      if( typeof (value) === 'object') {
         value = value.toString();
       }
       msg = msg.replace(variables[i], value);
@@ -78,19 +78,17 @@ var Validator = (function() {
     }
   };
 
-  self.do_validate = function(field, field_value, use_call_back) {
-    item = field;
-    value = field_value.trim();
-    pattern = item.pattern;
+  self.do_validate = function(item, value, use_call_back) {
+    var pattern = item.pattern;
 
     for(var i = 0; i < pattern.validates.length; i++) {
       var rule = _val_rules[pattern.validates[i]];
       if(rule) {
         if(rule.preprocessing) {
-          rule.preprocessing();
+          rule.preprocessing(pattern);
         }
 
-        item.corrected = rule.shoulda();
+        item.corrected = rule.shoulda(value, pattern);
         if(!item.corrected) {
           if(!pattern.message) {
             item.message = _final_message(rule.message, item);
@@ -104,7 +102,7 @@ var Validator = (function() {
     }
 
     if(use_call_back && self.call_back) {
-      self.call_back();
+      self.call_back(item, value);
     }
 
     return item.corrected;
@@ -113,7 +111,7 @@ var Validator = (function() {
   self.check_form = function() {
     var flag = true;
     for(var i in _val_items) {
-      tar = window.document.getElementById(_val_items[i].id);
+      var tar = window.document.getElementById(_val_items[i].id);
       if(tar) {
         flag &= self.do_validate(_val_items[i], tar.value.trim());
       }
@@ -136,14 +134,14 @@ var Validator = (function() {
 })();
 
 Validator.add_rule('presence', {
-  shoulda : function() {
+  shoulda : function(value, pattern) {
     return value != '';
   },
   message : "{alias}不能为空。"
 });
 
 Validator.add_rule('size', {
-  preprocessing : function() {
+  preprocessing : function(pattern) {
     if(!pattern.size.minimium) {
       pattern.size.minimium = 0;
     }
@@ -151,7 +149,7 @@ Validator.add_rule('size', {
       pattern.size.maximium = 50;
     }
   },
-  shoulda : function() {
+  shoulda : function(value, pattern) {
     flag = (value.length >= pattern.size.minimium);
     flag &= (value.length <= pattern.size.maximium);
     return flag;
@@ -160,7 +158,7 @@ Validator.add_rule('size', {
 });
 
 Validator.add_rule('format', {
-  shoulda : function() {
+  shoulda : function(value, pattern) {
     if(!pattern.format) {
       return false;
     }
@@ -170,7 +168,7 @@ Validator.add_rule('format', {
 });
 
 Validator.add_rule('shoulda', {
-  shoulda : function() {
+  shoulda : function(value, pattern) {
     if(!pattern.shoulda) {
       return false;
     }
@@ -180,14 +178,14 @@ Validator.add_rule('shoulda', {
 });
 
 Validator.add_rule('inclusion', {
-  shoulda : function() {
+  shoulda : function(value, pattern) {
     if(!pattern.inclusion) {
       return false;
     }
 
     var flag = false;
     for(var i in pattern.inclusion) {
-      if(pattern.inclusion[i] == value) {
+      if(pattern.inclusion[i] === value) {
         flag = true;
         break;
       }
@@ -198,14 +196,14 @@ Validator.add_rule('inclusion', {
 });
 
 Validator.add_rule('exclusion', {
-  shoulda : function() {
+  shoulda : function(value, pattern) {
     if(!pattern.exclusion) {
       return false;
     }
 
     var flag = true;
     for(var i in pattern.exclusion) {
-      if(pattern.exclusion[i] == value) {
+      if(pattern.exclusion[i] === value) {
         flag = false;
         break;
       }
@@ -216,7 +214,7 @@ Validator.add_rule('exclusion', {
 });
 
 Validator.add_rule('email', {
-  shoulda : function() {
+  shoulda : function(value, pattern) {
     var regex = /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+((\.[a-zA-Z0-9_-]{2,3}){1,2})$/;
     return regex.test(value);
   },
@@ -224,7 +222,7 @@ Validator.add_rule('email', {
 });
 
 Validator.add_rule('date', {
-  shoulda : function() {
+  shoulda : function(value, pattern) {
     var regex = /^\d{4}-(0?[1-9]|1[0-2])-(0?[1-9]|[1-2]\d|3[0-1])$/;
     return regex.test(value);
   },

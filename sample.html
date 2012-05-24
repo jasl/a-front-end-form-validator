@@ -6,13 +6,17 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Validator Test</title>
     <script language="JavaScript" src="validator.js"></script>
-    <script language="JavaScript" src="custom_validator_patterns.js"></script>
+    <script language="JavaScript" src="validator_wrapper.js"></script>
     <script language="JavaScript">
       var v = Validator;
       
-      v.call_back = function() {
+      v.call_back = function(item, value) {
+        var tar = document.getElementById(item.id + '_status');
+        
         if(!item.corrected) {
-          alert(item.message);
+          tar.innerHTML = item.message;
+        } else {
+          tar.innerHTML = 'valid';
         }
       };
       
@@ -97,38 +101,47 @@
     <form action="#" method="get" id="test_form" onsubmit="return v.check_form()">
       <label> not empty:
         <input type="text" name="item1" id="item1" onblur="v.check(this)"/>
+        <i id="item1_status"></i>
       </label>
       <br />
       <label> more than 4:
-        <input type="text" name="item2" id="item2" />
+        <input type="text" name="item2" id="item2" onblur="v.check(this)"/>
+        <i id="item2_status"></i>
       </label>
       <br />
       <label> less than 6:
-        <input type="text" name="item3" id="item3" />
+        <input type="text" name="item3" id="item3" onblur="v.check(this)"/>
+        <i id="item3_status"></i>
       </label>
       <br />
       <label> between 4 and 6:
-        <input type="text" name="item4" id="item4" />
+        <input type="text" name="item4" id="item4" onblur="v.check(this)"/>
+        <i id="item4_status"></i>
       </label>
       <br />
       <label> custom regex:
-        <input type="text" name="item5" id="item5" />
+        <input type="text" name="item5" id="item5" onblur="v.check(this)"/>
+        <i id="item5_status"></i>
       </label>
       <br />
       <label> by function:
-        <input type="text" name="item6" id="item6" />
+        <input type="text" name="item6" id="item6" onblur="v.check(this)"/>
+        <i id="item6_status"></i>
       </label>
       <br />
       <label> inclusion:
-        <input type="text" name="item7" id="item7" />
+        <input type="text" name="item7" id="item7" onblur="v.check(this)"/>
+        <i id="item7_status"></i>
       </label>
       <br />
       <label> exclusion:
-        <input type="text" name="item8" id="item8" />
+        <input type="text" name="item8" id="item8" onblur="v.check(this)"/>
+        <i id="item8_status"></i>
       </label>
       <br />
       <label> custom(date):
-        <input type="text" name="item9" id="item9" />
+        <input type="text" name="item9" id="item9" onblur="v.check(this)"/>
+        <i id="item9_status"></i>
       </label>
       <br />
       <input type="submit" />
