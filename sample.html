@@ -89,7 +89,7 @@
         'item6' : '字段6'
       }, {
         validates : ['shoulda'],
-        shoulda : function() {
+        shoulda : function(value, pattern) {
           return value == 'hello'
         },
         message : '{alias}不是hello。'
