@@ -6,7 +6,6 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Validator Test</title>
     <script language="JavaScript" src="validator.js"></script>
-    <script language="JavaScript" src="validator_wrapper.js"></script>
     <script language="JavaScript">
       var v = Validator;
 
@@ -18,7 +17,7 @@
         }
         alert(str);
       };
-      
+
       v.callback = function(item, value) {
         var tar = document.getElementById(item.id + '_status');
 
