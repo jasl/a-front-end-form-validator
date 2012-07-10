@@ -1,4 +1,5 @@
 /**
+ * A simple validator core.
  * @author Jasl
  * @version 0.7
  *
@@ -12,6 +13,12 @@ var Validator = (function() {
 
   self.default_message = '{alias}输入有误。';
 
+  /**
+   * Generate error message.
+   * @param {String} message template of error message
+   * @param {Object} item the validate object
+   * @return {String} generated error message
+   */
   var _final_message = function(message, item) {
     var msg = message;
     var variables = msg.match(/\{[.\w]+\}/ig);
@@ -36,7 +43,12 @@ var Validator = (function() {
     msg = msg.replace(/\{[.\w]+\}/ig, '');
     return msg;
   };
-
+  
+  /**
+   * Add rule to validator.
+   * @param {String}name pattern's name
+   * @param {Object} pattern pattern object
+   */
   self.add_rule = function(name, pattern) {
     if (name !== '' && pattern && pattern.shoulda) {
       _val_rules[name] = pattern;
@@ -46,6 +58,10 @@ var Validator = (function() {
     }
   };
 
+  /**
+   * A helper method to help callback get error items.
+   * @return {Array} items array which not pass validates.
+   */
   self.get_error_items = function() {
     var error_items = Array();
     for (var i in _val_items) {
@@ -59,7 +75,13 @@ var Validator = (function() {
   self.default_callback = undefined;
 
   self.submit_callback = undefined;
-
+  
+  /**
+   * Regist a validate item.
+   * @param {Object} item must have source, alias is recommand, condition is optional
+   * @param {Object} pattern validate rules and other meta
+   * @param {Function} callback will called after validate
+   */
   self.ensure = function(item, pattern, callback) {
     var val_item = {
       source : item.source,
@@ -77,6 +99,12 @@ var Validator = (function() {
     _val_items.push(val_item);
   };
 
+  /**
+   * Validate a item by rules
+   * @param {Object} item item which to be validated
+   * @param {Boolean} use_callback call callback after validate or not
+   * @return (Boolean) validate's result
+   */
   self.do_validate = function(item, use_callback) {
     item.is_correct = true;
     item.error_messages = [];
@@ -123,6 +151,10 @@ var Validator = (function() {
     return item.is_correct;
   };
 
+  /**
+   * Check all items
+   * @return (Boolean) if one of item not passed validates, return false
+   */
   self.check_all = function() {
     var flag = true;
     for (var i in _val_items) {
@@ -140,6 +172,11 @@ var Validator = (function() {
     }
   };
 
+  /**
+   * Check a form's field.
+   * @param {Object} e event sender
+   * @return (Boolean) validate's result
+   */
   self.check = function(e) {
     var event = arguments[0] || window.event;
     var item = null;
