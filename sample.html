@@ -7,7 +7,7 @@
     <script src="validator.js"></script>
     <script>
       var v = Validator;
-      //su
+
       v.submit_callback = function() {
         var str = "";
         var error_items = v.get_error_items();
@@ -20,6 +20,7 @@
         alert(str);
       };
 
+      // when validate item has no callback, use this.
       v.default_callback = function(item, value) {
         var tar = document.getElementById(item.source + '_status');
 
@@ -33,7 +34,7 @@
           tar.innerHTML = 'valid';
         }
       };
-
+      // you can add your own rule.
       Validator.add_rule('date', {
         shoulda : function(value, pattern) {
           var regex = /^\d{4}-(0?[1-9]|1[0-2])-(0?[1-9]|[1-2]\d|3[0-1])$/;
@@ -41,26 +42,17 @@
         },
         message : "{alias}不是有效的的日期格式。"
       });
-
+      // source can a dom id or a function with a return value.
       v.ensure({
-        source : 'item1',
-        alias : '字段1',
-        condition : function() {
-          return document.getElementById('item2').value === ""
-        }
+        source : function() {
+          return document.getElementById('item2').value + document.getElementById('item3').value;
+        },
+        alias : '字段2和3'
       }, {
-        validates : ['presence']
-      }, function(item, value) {
-        var tar = document.getElementById('item1_status');
-
-        if (!item.is_correct) {
-          str = "item1的回调：";
-          for (var i in item.error_messages) {
-            str += item.error_messages[i] + ' ';
-          }
-          tar.innerHTML = str;
-        } else {
-          tar.innerHTML = 'valid';
+        validates : ['presence', 'size'],
+        size : {
+          minimium : 8,
+          maximium : 10
         }
       });
       v.ensure({
