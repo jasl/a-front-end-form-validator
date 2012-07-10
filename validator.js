@@ -1,7 +1,7 @@
 /**
  * A simple validator core. but I think it isn't simple now - -
  * @author Jasl
- * @version 0.7
+ * @version 0.8
  *
  */
 var Validator = (function() {
