@@ -1,5 +1,5 @@
 /**
- * A simple validator core.
+ * A simple validator core. but I think it isn't simple now - -
  * @author Jasl
  * @version 0.7
  *
@@ -11,7 +11,7 @@ var Validator = (function() {
 
   var _val_rules = [];
 
-  self.default_message = '{alias}输入有误。';
+  self.default_message = '{display} is invalid.';
 
   /**
    * Generate error message.
@@ -23,8 +23,12 @@ var Validator = (function() {
     var msg = message;
     var variables = msg.match(/\{[.\w]+\}/ig);
 
-    if (msg.indexOf('{alias}') >= 0) {
-      msg = msg.replace('{alias}', item.alias);
+    if (msg.indexOf('{display}') >= 0) {
+      if (item.display) {
+        msg = msg.replace('{display}', item.display);
+      } else {
+        msg = msg.replace('{display}', "");
+      }
     }
 
     for (var i in variables) {
@@ -43,7 +47,7 @@ var Validator = (function() {
     msg = msg.replace(/\{[.\w]+\}/ig, '');
     return msg;
   };
-  
+
   /**
    * Add rule to validator.
    * @param {String}name pattern's name
@@ -63,7 +67,7 @@ var Validator = (function() {
    * @return {Array} items array which not pass validates.
    */
   self.get_error_items = function() {
-    var error_items = Array();
+    var error_items = [];
     for (var i in _val_items) {
       if (!_val_items[i].is_correct) {
         error_items.push(_val_items[i]);
@@ -75,10 +79,15 @@ var Validator = (function() {
   self.default_callback = undefined;
 
   self.submit_callback = undefined;
-  
+
   /**
    * Regist a validate item.
-   * @param {Object} item must have source, alias is recommand, condition is optional
+   * @param {Object} item must have source, display is recommand,
+   *                 and identity is recommand when the source
+   *                 isn't a dom condition, it will help you to
+   *                 check one specific field, when source is a
+   *                 dom id, it's will be the default identity
+   *                 callback is optional
    * @param {Object} pattern validate rules and other meta
    * @param {Function} callback will called after validate
    */
@@ -87,16 +96,23 @@ var Validator = (function() {
       source : item.source,
       pattern : pattern
     };
-    if (item.alias !== undefined) {
-      val_item.alias = item.alias;
+    if (item.display) {
+      val_item.display = item.display;
     }
-    if (item.condition !== undefined) {
+    if (item.condition) {
       val_item.condition = item.condition;
     }
-    if (callback !== undefined) {
+    if (callback) {
       val_item.callback = callback;
     }
-    _val_items.push(val_item);
+
+    if (item.identity) {
+      _val_items[item.identity] = val_item;
+    } else if ( typeof (item.source) === 'string') {
+      _val_items[item.source] = val_item;
+    } else {
+      _val_items.push(val_item);
+    }
   };
 
   /**
@@ -113,9 +129,6 @@ var Validator = (function() {
       var pattern = item.pattern;
       for (var i in pattern.validates) {
         var rule = _val_rules[pattern.validates[i]];
-        if (rule === undefined) {
-          continue;
-        }
 
         if (rule.preprocessing) {
           rule.preprocessing(pattern);
@@ -174,19 +187,16 @@ var Validator = (function() {
 
   /**
    * Check a form's field.
-   * @param {Object} e event sender
-   * @return (Boolean) validate's result
+   * @param {String} identity identity of one specific item.
+   * @return (Boolean) validate's result or undefined when identity isn't exists
    */
-  self.check = function(e) {
-    var event = arguments[0] || window.event;
-    var item = null;
-    for (var i in _val_items) {
-      if (_val_items[i].source === event.id) {
-        item = _val_items[i];
-        break;
-      }
+  self.check = function(identity) {
+    var item = _val_items[identity];
+    if (item) {
+      return self.do_validate(item, true);
+    } else {
+      return undefined;
     }
-    return self.do_validate(item, true);
   };
 
   return self;
@@ -196,7 +206,7 @@ Validator.add_rule('presence', {
   shoulda : function(value, pattern) {
     return value !== '';
   },
-  message : "{alias}不能为空。"
+  message : "{display}不能为空。"
 });
 
 Validator.add_rule('size', {
@@ -211,7 +221,7 @@ Validator.add_rule('size', {
   shoulda : function(value, pattern) {
     return value.length >= pattern.size.minimium && value.length <= pattern.size.maximium;
   },
-  message : "{alias}的长度应在{size.minimium}-{size.maximium}之间。"
+  message : "{display}的长度应在{size.minimium}-{size.maximium}之间。"
 });
 
 Validator.add_rule('format', {
@@ -221,7 +231,7 @@ Validator.add_rule('format', {
     }
     return pattern.format.test(value);
   },
-  message : "{alias}格式无效。"
+  message : "{display}格式无效。"
 });
 
 Validator.add_rule('shoulda', {
@@ -231,7 +241,7 @@ Validator.add_rule('shoulda', {
     }
     return pattern.shoulda(value);
   },
-  message : "{alias}格式无效。"
+  message : "{display}格式无效。"
 });
 
 Validator.add_rule('inclusion', {
@@ -252,7 +262,7 @@ Validator.add_rule('inclusion', {
     }
     return flag;
   },
-  message : "{alias}的值应是[{inclusion}]之一。"
+  message : "{display}的值应是[{inclusion}]之一。"
 });
 
 Validator.add_rule('exclusion', {
@@ -270,7 +280,7 @@ Validator.add_rule('exclusion', {
     }
     return flag;
   },
-  message : "{alias}不能包含[{exclusion}]。"
+  message : "{display}不能包含[{exclusion}]。"
 });
 
 Validator.add_rule('email', {
@@ -281,5 +291,5 @@ Validator.add_rule('email', {
     var regex = /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+((\.[a-zA-Z0-9_-]{2,3}){1,2})$/;
     return regex.test(value);
   },
-  message : "{alias}不是有效的E-mail格式。"
+  message : "{display}不是有效的E-mail格式。"
 });
