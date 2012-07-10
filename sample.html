@@ -56,6 +56,15 @@
         }
       });
       v.ensure({
+        source : 'item1',
+        alias : '字段1',
+        condition : function() {
+          return document.getElementById('item2').value !== "xxxxx";
+        }
+      }, {
+        validates : ['presence']
+      });
+      v.ensure({
         source : 'item2',
         alias : '字段2'
       }, {
