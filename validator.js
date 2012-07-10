@@ -123,7 +123,7 @@ var Validator = (function() {
     return item.is_correct;
   };
 
-  self.check_form = function() {
+  self.check_all = function() {
     var flag = true;
     for (var i in _val_items) {
       flag = self.do_validate(_val_items[i]) && flag;
