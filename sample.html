@@ -1,28 +1,34 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
 "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Validator Test</title>
-    <script language="JavaScript" src="validator.js"></script>
-    <script language="JavaScript">
+    <script src="validator.js"></script>
+    <script>
       var v = Validator;
-
-      v.summit_callback = function() {
+      //su
+      v.submit_callback = function() {
         var str = "";
         var error_items = v.get_error_items();
-        for(var i in error_items) {
-          str += error_items[i].message + "\n";
+        for (var i in error_items) {
+          str += error_items[i].alias + "\n";
+          for (var j in error_items[i].error_messages) {
+            str += "- " + error_items[i].error_messages[j] + "\n";
+          }
         }
         alert(str);
       };
 
-      v.callback = function(item, value) {
-        var tar = document.getElementById(item.id + '_status');
+      v.default_callback = function(item, value) {
+        var tar = document.getElementById(item.source + '_status');
 
-        if(!item.corrected) {
-          tar.innerHTML = item.message;
+        if (!item.is_correct) {
+          str = "";
+          for (var i in item.error_messages) {
+            str += item.error_messages[i] + ' ';
+          }
+          tar.innerHTML = str;
         } else {
           tar.innerHTML = 'valid';
         }
@@ -36,33 +42,39 @@
         message : "{alias}不是有效的的日期格式。"
       });
 
-      var min_size_pattern = {
+      v.ensure({
+        source : 'item1',
+        alias : '字段1',
+        condition : function() {
+          return document.getElementById('item2').value === ""
+        }
+      }, {
+        validates : ['presence']
+      }, function(item, value) {
+        var tar = document.getElementById('item1_status');
+
+        if (!item.is_correct) {
+          str = "item1的回调：";
+          for (var i in item.error_messages) {
+            str += item.error_messages[i] + ' ';
+          }
+          tar.innerHTML = str;
+        } else {
+          tar.innerHTML = 'valid';
+        }
+      });
+      v.ensure({
+        source : 'item2',
+        alias : '字段2'
+      }, {
         validates : ['size'],
         size : {
           minimium : 4
         }
-      };
-
-      // v.ensure({
-      // 'item1' : '字段1',
-      // 'item2' : '字段2'
-      // }, {
-      // validates : ['size'],
-      // size : {
-      // minimium : 6
-      // },
-      // });
-
-      v.ensure({
-        'item1' : '字段1'
-      }, {
-        validates : ['presence']
       });
       v.ensure({
-        'item2' : '字段2'
-      }, min_size_pattern);
-      v.ensure({
-        'item3' : '字段3'
+        source : 'item3',
+        alias : '字段3'
       }, {
         validates : ['size'],
         size : {
@@ -70,7 +82,8 @@
         }
       });
       v.ensure({
-        'item4' : '字段4'
+        source : 'item4',
+        alias : '字段4'
       }, {
         validates : ['size'],
         size : {
@@ -79,14 +92,16 @@
         }
       });
       v.ensure({
-        'item5' : '字段5'
+        source : 'item5',
+        alias : '字段5'
       }, {
         validates : ['format'],
         format : /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+((\.[a-zA-Z0-9_-]{2,3}){1,2})$/,
         message : '{alias}不是有效的email地址。'
       });
       v.ensure({
-        'item6' : '字段6'
+        source : 'item6',
+        alias : '字段6'
       }, {
         validates : ['shoulda'],
         shoulda : function(value, pattern) {
@@ -95,61 +110,65 @@
         message : '{alias}不是hello。'
       });
       v.ensure({
-        'item7' : '字段7'
+        source : 'item7',
+        alias : '字段7'
       }, {
         validates : ['inclusion'],
         inclusion : ['male', 'female']
       });
       v.ensure({
-        'item8' : '字段8'
+        source : 'item8',
+        alias : '字段8'
       }, {
         validates : ['presence', 'exclusion'],
         exclusion : ['nil', 'null']
       });
       v.ensure({
-        'item9' : '字段9'
+        source : 'item9',
+        alias : '字段9'
       }, {
-        validates : ['date']
+        validates : ['presence', 'date']
       });
+
     </script>
   </head>
   <body>
     <form action="#" method="get" id="test_form" onsubmit="return v.check_form()">
       <label> not empty:
         <input type="text" name="item1" id="item1" onblur="v.check(this)"/>
-        <i id="item1_status"></i> </label>
+        <i id="item1_status"> </i> </label>
       <br />
       <label> more than 4:
         <input type="text" name="item2" id="item2" onblur="v.check(this)"/>
-        <i id="item2_status"></i> </label>
+        <i id="item2_status"> </i> </label>
       <br />
       <label> less than 6:
         <input type="text" name="item3" id="item3" onblur="v.check(this)"/>
-        <i id="item3_status"></i> </label>
+        <i id="item3_status"> </i> </label>
       <br />
       <label> between 4 and 6:
         <input type="text" name="item4" id="item4" onblur="v.check(this)"/>
-        <i id="item4_status"></i> </label>
+        <i id="item4_status"> </i> </label>
       <br />
       <label> custom regex:
         <input type="text" name="item5" id="item5" onblur="v.check(this)"/>
-        <i id="item5_status"></i> </label>
+        <i id="item5_status"> </i> </label>
       <br />
       <label> by function:
         <input type="text" name="item6" id="item6" onblur="v.check(this)"/>
-        <i id="item6_status"></i> </label>
+        <i id="item6_status"> </i> </label>
       <br />
       <label> inclusion:
         <input type="text" name="item7" id="item7" onblur="v.check(this)"/>
-        <i id="item7_status"></i> </label>
+        <i id="item7_status"> </i> </label>
       <br />
       <label> exclusion:
         <input type="text" name="item8" id="item8" onblur="v.check(this)"/>
-        <i id="item8_status"></i> </label>
+        <i id="item8_status"> </i> </label>
       <br />
       <label> custom(date):
         <input type="text" name="item9" id="item9" onblur="v.check(this)"/>
-        <i id="item9_status"></i> </label>
+        <i id="item9_status"> </i> </label>
       <br />
       <input type="submit" />
     </form>
