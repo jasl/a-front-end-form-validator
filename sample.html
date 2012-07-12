@@ -5,14 +5,15 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Validator Test</title>
     <script src="validator.js"></script>
+    <script src="form_validator_non_jquery.js"></script>
     <script>
-      var v = Validator;
+      var v = FormValidator;
 
-      v.submit_callback = function() {
+      v.submit_callback = function(error_items) {
         var str = "";
-        var error_items = v.get_error_items();
+
         for (var i in error_items) {
-          str += error_items[i].display + "\n";
+          str += error_items[i].meta.display + "\n";
           for (var j in error_items[i].error_messages) {
             str += "- " + error_items[i].error_messages[j] + "\n";
           }
@@ -21,8 +22,8 @@
       };
 
       // when validate item has no callback, use this.
-      v.default_callback = function(item, value) {
-        var tar = document.getElementById(item.source + '_status');
+      v.default_callback = function(item, value) { 
+        var tar = document.getElementById(item.identity + '_status');
 
         if (!item.is_correct) {
           str = "";
@@ -35,7 +36,7 @@
         }
       };
       // you can add your own rule.
-      Validator.add_rule('date', {
+      v.add_rule('date', {
         shoulda : function(value, pattern) {
           var regex = /^\d{4}-(0?[1-9]|1[0-2])-(0?[1-9]|[1-2]\d|3[0-1])$/;
           return regex.test(value);
