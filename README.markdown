@@ -1,6 +1,6 @@
 #A-front-end-form-validator
 
-A rails-style javascript form validator, not required other libs, with high customable.
+A rails-style javascript form validator, not requiring other libs, and highly customizable.
 
 See sample.html to learn how to use :)
 
